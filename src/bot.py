@@ -93,8 +93,8 @@ async def react(msg: discord.Message, emoji_name: str) -> None:
     None
     """
     # Unicode emoji.
-    emoji_unicode: Union[bytes, str] = emoji.emojize(f":{emoji_name}:",
-                                                     use_aliases = True)
+    emoji_unicode: Union[bytes, str] = \
+        emoji.emojize(f":{emoji_name}:", use_aliases = True).replace(" ", "")
 
     if await try_react(msg, emoji_unicode):
         emoji_cache.append(emoji_unicode)
