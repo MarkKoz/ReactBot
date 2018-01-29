@@ -1,4 +1,4 @@
-from typing import Optional, Pattern, Union
+from typing import Optional, List, Pattern, Union
 import json
 import re
 
@@ -11,6 +11,7 @@ with open("config.json") as file:
     config = json.load(file)
 
 client: discord.Client = discord.Client()
+emoji_cache: List[Union[bytes, str, discord.Emoji]] = []
 
 @client.event
 async def on_ready():
@@ -65,13 +66,19 @@ async def on_message(msg: discord.Message):
 
     # Only processes messages in the channel specified in the config.
     if msg.channel.id == config["channel_id"]:
-        for name in config["emojis"]:
-            await react(msg, name)
+        # Uses the cache if it's not empty. Otherwise, the cache is populated.
+        if emoji_cache:
+            for e in emoji_cache:
+                await client.add_reaction(msg, e)
+        else:
+            for name in config["emojis"]:
+                await react(msg, name)
 
 async def react(msg: discord.Message, emoji_name: str) -> None:
     """Reacts to a message.
 
-    Reacts to a :any:`message` with an emoji corresponding to :any:`emoji_name`.
+    Reacts to a :any:`message` with an emoji corresponding to :any:`emoji_name`
+    and stores any successful emojis in a cache.
 
     Parameters
     ----------
@@ -86,12 +93,18 @@ async def react(msg: discord.Message, emoji_name: str) -> None:
     None
     """
     # Unicode emoji.
-    if await try_react(msg, emoji.emojize(f":{emoji_name}:",
-                                          use_aliases = True)):
+    emoji_unicode: Union[bytes, str] = emoji.emojize(f":{emoji_name}:",
+                                                     use_aliases = True)
+
+    if await try_react(msg, emoji_unicode):
+        emoji_cache.append(emoji_unicode)
         return
 
     # Custom emoji.
-    if await try_react(msg, await get_custom_emoji(emoji_name)):
+    emoji_custom: Optional[discord.Emoji] = await get_custom_emoji(emoji_name)
+
+    if await try_react(msg, emoji_custom):
+        emoji_cache.append(emoji_custom)
         return
 
     log.warning(f"Invalid emoji '{emoji_name}'.")
@@ -119,7 +132,7 @@ async def try_react(msg: discord.Message,
     try:
         await client.add_reaction(msg, emj)
         return True
-    except (discord.errors.HTTPException, discord.errors.InvalidArgument):
+    except (discord.errors.HTTPException, discord.errors.InvalidArgument) as e:
         return False
 
 async def get_custom_emoji(name: str) -> Optional[discord.Emoji]:
