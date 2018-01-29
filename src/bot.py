@@ -65,7 +65,8 @@ async def on_message(msg: discord.Message):
 
     # Only processes messages in the channel specified in the config.
     if msg.channel.id == config["channel_id"]:
-        await react(msg, config['emoji'])
+        for name in config["emojis"]:
+            await react(msg, name)
 
 async def react(msg: discord.Message, emoji_name: str) -> None:
     """Reacts to a message.
