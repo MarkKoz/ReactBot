@@ -5,7 +5,7 @@ import re
 import discord
 import emoji
 
-from src import logger
+import logger
 
 with open("config.json") as file:
     config = json.load(file)

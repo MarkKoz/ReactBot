@@ -1,7 +1,7 @@
 # Discord Reaction Bot
 ### Description
-Listens for messages on a specified channel and reacts to each one with a
-specified emoji. Both Unicode and custom emojis are supported. Due to the
+Listens for messages on a specified channel and reacts to each one with
+specified emojis. Both Unicode and custom emojis are supported. Due to the
 emoji package's shortcomings, not all of Discord's Unicode emoji aliases are
 supported; it is recommended to use the full name.
 
